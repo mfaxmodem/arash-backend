@@ -4,6 +4,7 @@ import (
 	"arash-website/config"
 	"arash-website/models"
 	"arash-website/routes"
+	"arash-website/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"log"
@@ -23,7 +24,7 @@ func main() {
 	}(config.DB)
 
 	// Migrate the schema
-	if err := config.DB.AutoMigrate(&models.User{}, &models.Role{}); err != nil {
+	if err := config.DB.AutoMigrate(&models.User{}, &models.Role{}, &models.Product{}, &models.Category{}); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
@@ -33,6 +34,8 @@ func main() {
 	// Setup routes
 	routes.SetupUserRoutes(r)
 	routes.SetupRoleRoutes(r)
+	routes.SetupProductRoutes(r, services.NewProductService(config.DB))
+	routes.SetupCategoryRoutes(r, services.NewCategoryService(config.DB))
 
 	// Start the server
 	if err := r.Run(":8080"); err != nil {
