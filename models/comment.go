@@ -4,7 +4,9 @@ import "gorm.io/gorm"
 
 type Comment struct {
 	gorm.Model
-	Content   string `gorm:"not null"`
-	ProductID uint
-	UserID    uint
+	AuthorName string `gorm:"not null"`
+	Email      string
+	Content    string `gorm:"not null"`
+	Approved   bool   `gorm:"default:false"`
+	ProductID  uint
 }
