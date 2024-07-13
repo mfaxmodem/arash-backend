@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+
 	// Initialize the database connection
 	config.InitDB()
 	defer func(DB *gorm.DB) {

@@ -7,10 +7,10 @@ import (
 
 type User struct {
 	gorm.Model
-	Username     string `gorm:"unique;not null"`
+	Username     string `gorm:"unique; not null"`
 	PasswordHash string `gorm:"not null"`
-	Email        string `gorm:"unique;not null;validator:email"`
-	RoleID       uint   `gorm:"index"`
+	Email        string `gorm:"unique; not null; validator:email"`
+	RoleID       uint   `gorm:"index;default:0"`
 }
 
 // SetPassword متدی است که پسورد را هش می‌کند و در فیلد PasswordHash ذخیره می‌کند.
