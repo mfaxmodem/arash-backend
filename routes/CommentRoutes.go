@@ -5,12 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupCommentRoutes(r *gin.Engine, commentController *controllers.CommentController) {
-	comments := r.Group("/comments")
+func SetupCommentRoutes(router *gin.RouterGroup, commentController *controllers.CommentController) {
+	commentRoutes := router.Group("/comments")
 	{
-		comments.POST("/", commentController.CreateComment)
-		comments.GET("/product/:productID", commentController.GetCommentsByProductID)
-		comments.GET("/", commentController.GetAllComments)
-		comments.PUT("/approve/:id", commentController.ApproveComment)
+		commentRoutes.POST("/", commentController.CreateComment)
+		commentRoutes.GET("/", commentController.GetAllComments)
+		commentRoutes.GET("/:id", commentController.GetCommentByID)
+		commentRoutes.PUT("/:id", commentController.UpdateComment)
+		commentRoutes.DELETE("/:id", commentController.DeleteComment)
 	}
 }

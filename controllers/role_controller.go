@@ -1,59 +1,95 @@
 package controllers
 
 import (
-	"arash-website/config"
 	"arash-website/models"
+	"arash-website/services"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
-func CreateRole(c *gin.Context) {
+type RoleController struct {
+	RoleService *services.RoleService
+}
+
+func NewRoleController(roleService *services.RoleService) *RoleController {
+	return &RoleController{RoleService: roleService}
+}
+
+func (ctrl *RoleController) CreateRole(c *gin.Context) {
 	var role models.Role
 	if err := c.ShouldBindJSON(&role); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	config.DB.Create(&role)
+
+	if err := ctrl.RoleService.CreateRole(&role); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, role)
+}
+
+func (ctrl *RoleController) GetRoleByID(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
+		return
+	}
+
+	role, err := ctrl.RoleService.GetRoleByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Role not found"})
+		return
+	}
+
 	c.JSON(http.StatusOK, role)
 }
 
-func GetAllRoles(c *gin.Context) {
-	var roles []models.Role
-	config.DB.Find(&roles)
+func (ctrl *RoleController) GetAllRoles(c *gin.Context) {
+	roles, err := ctrl.RoleService.GetAllRoles()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, roles)
 }
 
-func GetRoleByID(c *gin.Context) {
-	var role models.Role
-	id := c.Param("id")
-	if err := config.DB.Where("id = ?", id).First(&role).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Role not found"})
+func (ctrl *RoleController) UpdateRole(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
 		return
 	}
-	c.JSON(http.StatusOK, role)
-}
 
-func UpdateRole(c *gin.Context) {
 	var role models.Role
-	id := c.Param("id")
-	if err := config.DB.Where("id = ?", id).First(&role).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Role not found"})
-		return
-	}
 	if err := c.ShouldBindJSON(&role); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	config.DB.Save(&role)
+
+	role.ID = uint(id)
+	if err := ctrl.RoleService.UpdateRole(&role); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, role)
 }
 
-func DeleteRole(c *gin.Context) {
-	var role models.Role
-	id := c.Param("id")
-	if err := config.DB.Where("id = ?", id).Delete(&role).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Role not found"})
+func (ctrl *RoleController) DeleteRole(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Role deleted"})
+
+	if err := ctrl.RoleService.DeleteRole(uint(id)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil)
 }

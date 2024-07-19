@@ -5,13 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupUserRoutes(router *gin.Engine) {
+func SetupUserRoutes(router *gin.RouterGroup, userController *controllers.UserController) {
 	userRoutes := router.Group("/users")
 	{
-		userRoutes.POST("/", controllers.CreateUser)
-		userRoutes.GET("/", controllers.GetAllUsers)
-		userRoutes.GET("/:id", controllers.GetUserByID)
-		userRoutes.PUT("/:id", controllers.UpdateUser)
-		userRoutes.DELETE("/:id", controllers.DeleteUser)
+		userRoutes.POST("/", userController.CreateUser)
+		userRoutes.GET("/", userController.GetAllUsers)
+		userRoutes.GET("/:id", userController.GetUser)
+		userRoutes.PUT("/:id", userController.UpdateUser)
+		userRoutes.DELETE("/:id", userController.DeleteUser)
 	}
 }

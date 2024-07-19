@@ -11,7 +11,7 @@ import (
 )
 
 // AuthenticationEnabled determines if authentication is enabled
-var AuthenticationEnabled = true
+var AuthenticationEnabled = false
 var DB *gorm.DB
 
 func InitDB() {

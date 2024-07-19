@@ -5,13 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRoleRoutes(router *gin.Engine) {
+func SetupRoleRoutes(router *gin.RouterGroup, roleController *controllers.RoleController) {
 	roleRoutes := router.Group("/roles")
 	{
-		roleRoutes.POST("/", controllers.CreateRole)
-		roleRoutes.GET("/", controllers.GetAllRoles)
-		roleRoutes.GET("/:id", controllers.GetRoleByID)
-		roleRoutes.PUT("/:id", controllers.UpdateRole)
-		roleRoutes.DELETE("/:id", controllers.DeleteRole)
+		roleRoutes.POST("/", roleController.CreateRole)
+		roleRoutes.GET("/", roleController.GetAllRoles)
+		roleRoutes.GET("/:id", roleController.GetRoleByID)
+		roleRoutes.PUT("/:id", roleController.UpdateRole)
+		roleRoutes.DELETE("/:id", roleController.DeleteRole)
 	}
 }

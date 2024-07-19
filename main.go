@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-
 	// Initialize the database connection
 	config.InitDB()
 	defer func(DB *gorm.DB) {
@@ -27,8 +26,16 @@ func main() {
 	}(config.DB)
 
 	// Migrate the schema
-	if err := config.DB.AutoMigrate(&models.User{}, &models.Role{}, &models.Product{}, &models.Category{}, &models.ProductImage{},
-		&models.ProductTag{}, &models.Tag{}, &models.Comment{}); err != nil {
+	if err := config.DB.AutoMigrate(
+		&models.User{},
+		&models.Role{},
+		&models.Product{},
+		&models.Category{},
+		&models.ProductImage{},
+		&models.ProductTag{},
+		&models.Tag{},
+		&models.Comment{},
+	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
@@ -38,30 +45,30 @@ func main() {
 	// Apply CSRF middleware
 	r.Use(middlewares.AuthMiddleware())
 
+	// Create an API group
+	api := r.Group("/api")
+
+	// Setup services
+	productService := services.NewProductService(config.DB)
+	categoryService := services.NewCategoryService(config.DB)
+	commentService := services.NewCommentService(config.DB)
+	userService := services.NewUserService(config.DB)
+	roleService := services.NewRoleService(config.DB)
+
+	// Setup controllers
+	commentController := controllers.NewCommentController(commentService)
+	roleController := controllers.NewRoleController(roleService)
+	userController := controllers.NewUserController(*userService)
+
 	// Setup routes
-	publicRoutes(r)
-	protectedRoutes(r)
+	routes.SetupProductRoutes(api, productService)
+	routes.SetupCategoryRoutes(api, categoryService)
+	routes.SetupCommentRoutes(api, commentController)
+	routes.SetupUserRoutes(api, userController)
+	routes.SetupRoleRoutes(api, roleController)
 
 	// Start the server
 	if err := r.Run(":8080"); err != nil {
 		log.Fatalf("Could not start server: %v", err)
-	}
-}
-
-func publicRoutes(r *gin.Engine) {
-	routes.SetupUserRoutes(r)
-	routes.SetupRoleRoutes(r)
-	routes.SetupProductRoutes(r, services.NewProductService(config.DB))
-	routes.SetupCategoryRoutes(r, services.NewCategoryService(config.DB))
-	routes.SetupCommentRoutes(r, controllers.NewCommentController(services.NewCommentService(config.DB)))
-}
-
-func protectedRoutes(r *gin.Engine) {
-	protected := r.Group("/")
-	protected.Use(middlewares.AuthMiddleware())
-	{
-		commentController := controllers.NewCommentController(services.NewCommentService(config.DB))
-		protected.POST("/comments/approve/:id", commentController.ApproveComment)
-		// Define more protected routes here
 	}
 }

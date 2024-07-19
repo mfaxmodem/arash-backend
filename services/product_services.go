@@ -28,15 +28,19 @@ func (s *ProductService) GetProductByID(id uint) (*models.Product, error) {
 	return &product, nil
 }
 
-func (s *ProductService) UpdateProduct(product *models.Product) error {
-	if err := s.DB.Save(product).Error; err != nil {
-		return err
+func (s *ProductService) UpdateProduct(id uint, updatedProduct *models.Product) (*models.Product, error) {
+	var product models.Product
+	if err := s.DB.First(&product, id).Error; err != nil {
+		return nil, err
 	}
-	return nil
+	if err := s.DB.Model(&product).Updates(updatedProduct).Error; err != nil {
+		return nil, err
+	}
+	return &product, nil
 }
 
-func (s *ProductService) DeleteProduct(product *models.Product) error {
-	if err := s.DB.Delete(product).Error; err != nil {
+func (s *ProductService) DeleteProduct(id uint) error {
+	if err := s.DB.Delete(&models.Product{}, id).Error; err != nil {
 		return err
 	}
 	return nil

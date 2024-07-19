@@ -20,19 +20,12 @@ func (s *CommentService) CreateComment(comment *models.Comment) error {
 	return nil
 }
 
-func (s *CommentService) ApproveComment(id uint) error {
-	if err := s.DB.Model(&models.Comment{}).Where("id = ?", id).Update("approved", true).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *CommentService) GetCommentsByProductID(productID uint) ([]models.Comment, error) {
-	var comments []models.Comment
-	if err := s.DB.Where("product_id = ? AND approved = ?", productID, true).Find(&comments).Error; err != nil {
+func (s *CommentService) GetCommentByID(id uint) (*models.Comment, error) {
+	var comment models.Comment
+	if err := s.DB.First(&comment, id).Error; err != nil {
 		return nil, err
 	}
-	return comments, nil
+	return &comment, nil
 }
 
 func (s *CommentService) GetAllComments() ([]models.Comment, error) {
@@ -41,4 +34,18 @@ func (s *CommentService) GetAllComments() ([]models.Comment, error) {
 		return nil, err
 	}
 	return comments, nil
+}
+
+func (s *CommentService) UpdateComment(comment *models.Comment) error {
+	if err := s.DB.Save(comment).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *CommentService) DeleteComment(id uint) error {
+	if err := s.DB.Delete(&models.Comment{}, id).Error; err != nil {
+		return err
+	}
+	return nil
 }

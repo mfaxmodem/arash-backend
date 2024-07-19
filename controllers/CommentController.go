@@ -22,44 +22,25 @@ func (cc *CommentController) CreateComment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	if err := cc.Service.CreateComment(&comment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Comment submitted successfully"})
+	c.JSON(http.StatusCreated, comment)
 }
 
-func (cc *CommentController) ApproveComment(c *gin.Context) {
+func (cc *CommentController) GetCommentByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment ID"})
 		return
 	}
-
-	if err := cc.Service.ApproveComment(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Comment approved successfully"})
-}
-
-func (cc *CommentController) GetCommentsByProductID(c *gin.Context) {
-	productID, err := strconv.Atoi(c.Param("productID"))
+	comment, err := cc.Service.GetCommentByID(uint(id))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
 		return
 	}
-
-	comments, err := cc.Service.GetCommentsByProductID(uint(productID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, comments)
+	c.JSON(http.StatusOK, comment)
 }
 
 func (cc *CommentController) GetAllComments(c *gin.Context) {
@@ -68,6 +49,39 @@ func (cc *CommentController) GetAllComments(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, comments)
+}
+
+func (cc *CommentController) UpdateComment(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment ID"})
+		return
+	}
+
+	var comment models.Comment
+	if err := c.ShouldBindJSON(&comment); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	comment.ID = uint(id)
+	if err := cc.Service.UpdateComment(&comment); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, comment)
+}
+
+func (cc *CommentController) DeleteComment(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment ID"})
+		return
+	}
+	if err := cc.Service.DeleteComment(uint(id)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusNoContent, nil)
 }

@@ -2,7 +2,6 @@ package services
 
 import (
 	"arash-website/models"
-	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -15,11 +14,6 @@ func NewCategoryService(db *gorm.DB) *CategoryService {
 }
 
 func (s *CategoryService) CreateCategory(category *models.Category) error {
-	var existingCategory models.Category
-	if err := s.DB.Where("name = ?", category.Name).First(&existingCategory).Error; err == nil {
-		return fmt.Errorf("category with name '%s' already exists", category.Name)
-	}
-
 	if err := s.DB.Create(category).Error; err != nil {
 		return err
 	}
@@ -41,8 +35,8 @@ func (s *CategoryService) UpdateCategory(category *models.Category) error {
 	return nil
 }
 
-func (s *CategoryService) DeleteCategory(category *models.Category) error {
-	if err := s.DB.Delete(category).Error; err != nil {
+func (s *CategoryService) DeleteCategory(id uint) error {
+	if err := s.DB.Delete(&models.Category{}, id).Error; err != nil {
 		return err
 	}
 	return nil
